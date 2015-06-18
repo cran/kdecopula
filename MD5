@@ -1,4 +1,4 @@
-e38e6b8c2fbabc7572951ddfb85ee334 *DESCRIPTION
+a21e7c5af3574fd367834c7dfffeca14 *DESCRIPTION
 c1bca82fac780ab76b8f83fe6fccf373 *NAMESPACE
 78f995d62ce02fab1868a863494f2db3 *R/RcppExports.R
 0171b357388dd4fe0cdc2cdf668e5753 *R/eval_tll.R
@@ -12,15 +12,15 @@ ad12eb492b4d39b1381db4f2f44390ad *inst/include/hfunc.h
 294938b378f4b585b0231c9a8bee5a20 *inst/include/kernels.h
 9f25cae6345eb429f7003830c9b02cab *inst/include/renorm.h
 7ed5774ceff6bbe8c9f8bf1bfe839240 *man/kdecop.Rd
-6b9b91b0a4a5469cbb4d3639bd546b9d *man/kdecopula-package.Rd
+249d52a8f7a070be626e7e24ed39ed12 *man/kdecopula-package.Rd
 986e1c1c8c71d7fc1271b29b3f0ec0fb *man/plot.kdecopula.Rd
 0a5d7dc2636c51f1cd4a94a569551a6c *man/wdbc.Rd
 d92890d41cc805b441e37fd3578ff132 *src/Makevars
 179bdea1e8b0d0888d53262b06831905 *src/Makevars.win
 586bcfc6ab378f92b80c9aa2d5139c28 *src/RcppExports.cpp
 d2a13a0a8b67531d5774cf7723f5e497 *src/evaluators.cpp
-14e96053494d48cda36503ec55ddc2f0 *src/hfunc.cpp
+c143e071e2e6d51891306057ef93d328 *src/hfunc.cpp
 26bd0f7e1df97b92648e8449c565cd04 *src/integrate.cpp
 0cbe7d8467f3e873ae88ad5e8de7ac50 *src/interp.cpp
-13d4eb574459db20ce6e4097d2a12c74 *src/kernels.cpp
+acad57c482fdcfb112dc90b9716b7414 *src/kernels.cpp
 e8adc4190c5e0c81a8228c6df723d30c *src/renorm.cpp
