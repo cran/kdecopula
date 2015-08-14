@@ -1,8 +1,8 @@
-04d9f249c4d379c546a0cfed161e2d64 *DESCRIPTION
+0594079c66139fba86a58c904393ef9a *DESCRIPTION
 337b5555ff4d7a828411ef5ffeef916c *NAMESPACE
 78f995d62ce02fab1868a863494f2db3 *R/RcppExports.R
 0171b357388dd4fe0cdc2cdf668e5753 *R/eval_tll.R
-a9051e414f11235c01679baf443a3a81 *R/helpers.R
+7925ec09e81765697c4affc119148dfb *R/helpers.R
 3c1e3dc087ad9d67642b34a2a950a82a *R/kdecop.R
 3e5a20c13a5e1bb6d56a6d124fcf5fec *data/wdbc.rda
 fdbdf058121d861d969be42c3edbc38b *inst/include/evaluators.h
@@ -12,7 +12,7 @@ aae621e95544c09598fdcc7bac231705 *inst/include/interp.h
 294938b378f4b585b0231c9a8bee5a20 *inst/include/kernels.h
 9f25cae6345eb429f7003830c9b02cab *inst/include/renorm.h
 7ed5774ceff6bbe8c9f8bf1bfe839240 *man/kdecop.Rd
-14be796532fb037521d284b00779a9a7 *man/kdecopula-package.Rd
+c9cf05dfbf6f3f3e2a68f93b0f087921 *man/kdecopula-package.Rd
 986e1c1c8c71d7fc1271b29b3f0ec0fb *man/plot.kdecopula.Rd
 0a5d7dc2636c51f1cd4a94a569551a6c *man/wdbc.Rd
 d92890d41cc805b441e37fd3578ff132 *src/Makevars
@@ -21,6 +21,6 @@ d92890d41cc805b441e37fd3578ff132 *src/Makevars
 d2a13a0a8b67531d5774cf7723f5e497 *src/evaluators.cpp
 d9e760d3ee007a0d1a707c05e78d7bb1 *src/hfunc.cpp
 901f73f54395c6c7e33daa5f1e1644d7 *src/integrate.cpp
-5cab8ec3675ca06de120c67d9fb86616 *src/interp.cpp
+c3e161e116e6e3a3ef55cd4a64f108dd *src/interp.cpp
 acad57c482fdcfb112dc90b9716b7414 *src/kernels.cpp
-267cd4bba171e929eb822e56d4c31cc6 *src/renorm.cpp
+9524bd5e5dba68c9ae1017e442760656 *src/renorm.cpp
