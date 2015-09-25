@@ -5,8 +5,8 @@ import(lattice,
        qrng,
        Rcpp,
        VineCopula)
-importFrom("graphics", "contour")
-importFrom("grDevices", "colorRampPalette", "rgb")
+importFrom("graphics", "plot", "contour")
+importFrom("grDevices", "colorRampPalette", "rgb", "col2rgb")
 importFrom("stats", "cor", "cov", "dbeta", "dnorm", "optim", "pnorm", "predict", "qnorm", "runif")
 importFrom("utils", "modifyList")
 
@@ -15,3 +15,6 @@ export(kdecop,
        pkdecop,
        rkdecop)
 S3method(plot, kdecopula)
+S3method(contour, kdecopula)
+S3method(print, kdecopula)
+S3method(summary, kdecopula)
