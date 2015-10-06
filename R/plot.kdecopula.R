@@ -92,7 +92,7 @@ plot.kdecopula <- function(x, type = "surface", margins, size, ...) {
     if (margins == "unif") {
         points <- switch(type,
                          "contour"  = seq(1e-5, 1 - 1e-5, length.out = size),
-                         "surface"  = 1:size / (size + 1))
+                         "surface"  = seq(2.5e-2, 1 - 2.5e-2, length.out = size))
         g <- as.matrix(expand.grid(points, points))
         points <- g[1L:size, 1L]
         adj <- 1
@@ -117,6 +117,20 @@ plot.kdecopula <- function(x, type = "surface", margins, size, ...) {
     vals <- dkdecop(g, x)
     cop <- matrix(vals, size, size)
     
+    ## get variable names
+    nms <- colnames(x$udata)
+    if (length(nms) == 2) {
+        xlab <- nms[1]
+        ylab <- nms[2]
+    } else {
+        xlab <- switch(margins,
+                       "unif" = expression(u[1]),
+                       "norm" = expression(z[1]))
+        ylab <- switch(margins,
+                       "unif" = expression(u[2]),
+                       "norm" = expression(z[2]))
+    }
+    
     ## actual plotting
     if (type == "contour") {        
         # set default parameters
@@ -126,16 +140,11 @@ plot.kdecopula <- function(x, type = "surface", margins, size, ...) {
                      levels = levels,
                      xlim = xlim,
                      ylim = ylim,
-                     xlab = switch(margins,
-                                   "unif" = expression(u[1]),
-                                   "norm" = expression(z[1])),
-                     ylab = switch(margins,
-                                   "unif" = expression(u[2]),
-                                   "norm" = expression(z[2])))
+                     xlab = xlab,
+                     ylab = ylab)
         
         # call contour with final parameters
         do.call(contour, modifyList(pars, list(...)))
-        
     } else if (type == "heat") {
         stop("Not implemented yet")
     } else if (type == "surface") {
@@ -162,12 +171,8 @@ plot.kdecopula <- function(x, type = "surface", margins, size, ...) {
                      col.regions=
                          c(colorRampPalette(c(tint(TUMblue, 0.5), "white"))(50),
                            rep("white", 50)),
-                     xlab = switch(margins,
-                                   "unif" = expression(u[1]),
-                                   "norm" = expression(z[1])),
-                     ylab = switch(margins,
-                                   "unif" = expression(u[2]),
-                                   "norm" = expression(z[2])),
+                     xlab = list(xlab, rot = 20),
+                     ylab = list(ylab, rot = 30-90),
                      zlab = "",
                      zlim = switch(margins,
                                    "unif" = c(0, max(3, 1.1*max(lst$c))),
