@@ -7,7 +7,7 @@
 #' or simulate synthetic data, respectively.
 #'   
 #' @param udata \code{nx2} matrix of copula data.
-#' @param bw bandwidth specification; if missing, \code{bw} is selected
+#' @param bw bandwidth specification; if \code{NA}, \code{bw} is selected
 #' automatically; Otherwise, please provide (for the respective method) \cr
 #' \code{"MR", "beta"}: a positive real number, \cr
 #' \code{"T"}: a \eqn{2x2} matrix for method, \cr
@@ -31,7 +31,7 @@
 #' \code{"TTCV"}: tapered transformation estimator with profile cross-validation
 #' bandwidths.
 #' @param knots integer; number of knots in each dimension for the spline
-#' approximation; defaults to \code{50}.
+#' approximation.
 #' @param renorm.iter integer; number of iterations for the renormalization
 #' procedure (see \emph{Details}).
 #' @param info logical; if \code{TRUE}, additional information about the
@@ -115,7 +115,7 @@
 #' ## simulate 500 samples from density estimate
 #' rkdecop(500, dens.est)
 #' 
-kdecop <- function(udata, bw, mult = 1, method = "TLL2", knots = NA, renorm.iter = 3L, info = TRUE) {
+kdecop <- function(udata, bw = NA, mult = 1, method = "TLL2", knots = 50, renorm.iter = 3L, info = TRUE) {
     udata <- as.matrix(udata)
     n <- nrow(udata)
     d <- ncol(udata)
@@ -141,6 +141,8 @@ kdecop <- function(udata, bw, mult = 1, method = "TLL2", knots = NA, renorm.iter
     
     ## bandwidth selection and adjustment (with bandwidth checks)
     if (missing(bw))
+        bw <- bw_select(udata, method)
+    if (any(is.na(bw)))
         bw <- bw_select(udata, method)
     if (method %in% c("TLL1", "TLL2")) {
         if (is.null(bw$B) | is.null(bw$alpha))
@@ -177,7 +179,7 @@ where both parts of the bandwidth specification are provided via  'your.B', and 
                           bw$alpha,
                           deg = as.numeric(substr(method, 4, 4)))
     } else {
-        lfit <- NA
+        lfit <- NULL
     }
     
     ## construct grid with k knots in dimension d
@@ -191,8 +193,7 @@ where both parts of the bandwidth specification are provided via  'your.B', and 
                    bw = bw,
                    lfit = lfit,
                    method = method)
-    vals <- array(evalf(grid, obj = object), 
-                  dim = rep(knots, d))
+    vals <- array(evalf(grid, obj = object), dim = rep(knots, d))
     
     ## rescale copula density to have uniform margins
     if (renorm.iter > 0) {

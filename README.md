@@ -75,7 +75,8 @@ kde.fit <- kdecop(u)  # kernel estimation (bandwidth selected automatically)
 summary(kde.fit)
 #> Kernel copula density estimate
 #> ------------------------------
-#> Variables:    mean radius -- mean concavityObservations: 569 
+#> Variables:    mean radius -- mean concavity 
+#> Observations: 569 
 #> Method:       Transformation local likelihood, log-quadratic ('TLL2') 
 #> Bandwidth:    alpha = 0.353621
 #>               B = matrix(c(0.71, 0.7, -1.09, 1.09), 2, 2)
@@ -120,7 +121,6 @@ You can also pass further arguments to the `...` argument to refine the aestheti
 
 ``` r
 plot(kde.fit, 
-     size = 15,  # reduce grid size
      zlim = c(0, 10),  # z-axis limits
      screen = list(x = -75, z = 45),  # rotate screen
      xlab = list(rot = 25),  # labels can be rotated as well
@@ -134,8 +134,6 @@ contour(kde.fit, col = terrain.colors(30), levels = seq(0, 0.3, by = 0.01))
 ```
 
 ![](inst/README-unnamed-chunk-10-1.png)
-
-We see that the asymmetries observed in the data are adequately reflected by the estimated model.
 
 #### Working with a `kdecopula` object
 
@@ -156,6 +154,8 @@ plot(unew)
 ```
 
 ![](inst/README-unnamed-chunk-12-1.png)
+
+We see that the asymmetries observed in the data are adequately reflected by the estimated model.
 
 References
 ----------
