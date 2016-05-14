@@ -1,3 +1,29 @@
+kdecopula 0.6.0
+-------------------------------
+
+DEPENDS
+
+  * Package no longer imports packages `cubature` and `VineCopula`.
+
+BUG FIXES
+
+  * improved algorithms for numerical inversion
+  
+NEW FEATURES
+
+  * new function `hkdecop` to evaluate conditional distributions 
+    ("h-functions").
+    
+  * extended plotting functionality (exponential margins).
+  
+  * faster calculations of bandwidths for methods "MR" and "beta" due to
+    precalculated integral values.
+    
+OTHER
+
+  * updated vignette.
+  
+  
 kdecopula 0.5.0
 -------------------------------
 
