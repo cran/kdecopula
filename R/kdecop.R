@@ -24,8 +24,12 @@
 #' \code{"T"}: transformation estimator with standard bivariate kernel 
 #' estimation, \cr 
 #' \code{"TLL1"}: transformation estimator with log-linear local likelihood
+#' estimation (Geenenens et al., 2014), \cr 
+#' \code{"TLL2"}: transformation estimator with log-quadradtic local likelihood
+#' estimation (Geenenens et al., 2014), \cr 
+#' \code{"TLL1nn"}: transformation estimator with log-linear local likelihood
 #' estimation and nearest-neighbor bandwidths (Geenenens et al., 2014), \cr 
-#' \code{"TLL2"}: transformation estimator with log-quadradtic local likelihood 
+#' \code{"TLL2nn"}: transformation estimator with log-quadradtic local likelihood 
 #' estimation and nearest-neighbor bandwidths (Geenenens et al., 2014), \cr
 #' \code{"TTPI"}: tapered transformation estimator with plug-in bandwidths, \cr
 #' \code{"TTCV"}: tapered transformation estimator with profile cross-validation
@@ -58,8 +62,10 @@
 #' and \code{\link[kdecopula:contour.kdecopula]{contour}}.
 #' 
 #' @details Details on the estimation methods and bandwidth selection can be
-#' found in Geenens et al. (2014) for methods \code{TLL1/2} and Nagler (2014) 
-#' for other methods. We use a Gaussian product kernel function for all methods 
+#' found in Geenens et al. (2014) for methods \code{TLL1/2nn} and Nagler (2014) 
+#' for other methods. For \code{TLL1/2}, we use the rule of thumb
+#' \deqn{cov(\Phi^{-1}(udata))^{1/2} * 3.5 * n^{1 / (4 * deg + 2)}}.  
+#' We use a Gaussian product kernel function for all methods 
 #' except the beta kernel estimator.\cr 
 #' 
 #' Kernel estimates are usually no proper copula densities. In particular, the
@@ -117,7 +123,7 @@
 #' plot(rkdecop(500, dens.est))  # pseudo-random
 #' plot(rkdecop(500, dens.est), quasi = TRUE)  # quasi-random
 #' 
-kdecop <- function(udata, bw = NA, mult = 1, method = "TLL2", knots = 50, renorm.iter = 3L, info = TRUE) {
+kdecop <- function(udata, bw = NA, mult = 1, method = "TLL2", knots = 30, renorm.iter = 3L, info = TRUE) {
     udata <- as.matrix(udata)
     n <- nrow(udata)
     d <- ncol(udata)
@@ -129,7 +135,9 @@ kdecop <- function(udata, bw = NA, mult = 1, method = "TLL2", knots = 50, renorm
         stop("Dimension has to be 2.")
     if (any(udata > 1) | any(udata < 0))
         stop("'udata' have to be in the interval [0,1].")
-    if (!(method %in% c("MR", "beta", "T", "TLL1", "TLL2", "TTPI", "TTCV")))
+    if (!(method %in% c("MR", "beta", "T",
+                        "TLL1", "TLL2", "TLL1nn", "TLL2nn",
+                        "TTPI", "TTCV", "bern")))
         stop("method not implemented")
     if (mult <= 0)
         stop("'mult' has to be a positive number.")
@@ -146,9 +154,9 @@ kdecop <- function(udata, bw = NA, mult = 1, method = "TLL2", knots = 50, renorm
         bw <- bw_select(udata, method)
     if (any(is.na(bw)))
         bw <- bw_select(udata, method)
-    if (method %in% c("TLL1", "TLL2")) {
+    if (method %in% c("TLL1nn", "TLL2nn")) {
         if (is.null(bw$B) | is.null(bw$alpha))
-            stop("For methods 'TLL1/2', you have to provide a list 'bw = list(B = <your.B>,  alpha = <your.alpha>)'
+            stop("For methods 'TLL1/2nn', you have to provide a list 'bw = list(B = <your.B>,  alpha = <your.alpha>)'
 where both parts of the bandwidth specification are provided via  'your.B', and 'your.alpha'.")
         if (any(c(diag(bw$B), bw$alpha) <= 0))
             stop("Bandwidths have to be positive.")
@@ -171,23 +179,35 @@ where both parts of the bandwidth specification are provided via  'your.B', and 
         bw <- min(bw * mult, 1)
     } else if (method == "beta") {
         bw <- bw * mult
+    } else if (method == "bern") {
+        bw <- round(bw * mult)
     }
     
+    ## construct grid with k knots in dimension d
+    knots <- 30
+    pnts <- pnorm(seq(-3.25, 3.25, l = knots))
+    grid <- as.matrix(do.call(expand.grid,
+                              split(rep(pnts, d), rep(c(1, 2), each = knots))))
+    
     ## fit model for method TLL
-    if (method %in% c("TLL1", "TLL2")) {
+    if (method %in% c("TLL1nn", "TLL2nn")) {
         zdata <-  qnorm(udata)
         lfit <- my_locfit(zdata,
                           bw$B,
                           bw$alpha,
-                          deg = as.numeric(substr(method, 4, 4)))
+                          bw$kappa,
+                          deg = as.numeric(substr(method, 4, 4)),
+                          grid = grid)
+    } else if (method %in% c("TLL1", "TLL2")) {
+        zdata <-  qnorm(udata)
+        lfit <- my_locfitc(zdata,
+                           bw,
+                           mult,
+                           deg = as.numeric(substr(method, 4, 4)),
+                           grid = grid)
     } else {
         lfit <- NULL
     }
-    
-    ## construct grid with k knots in dimension d
-    pnts <- pnorm(seq(-3.25, 3.25, l = knots))
-    grid <- as.matrix(do.call(expand.grid,
-                              split(rep(pnts, d), rep(c(1, 2), each = knots))))
     
     ## evaluate estimator on grid
     evalf <- eval_func(method)  # get evaluation function
@@ -210,11 +230,12 @@ where both parts of the bandwidth specification are provided via  'your.B', and 
                 grid     = pnts,
                 estimate = vals,
                 bw       = bw,
+                mult     = mult,
                 method   = method)
     class(res) <- "kdecopula"
     
     ## add effp for TLL
-    if (method %in% c("TLL1", "TLL2"))
+    if (method %in% c("TLL1", "TLL2", "TLL1nn", "TLL2nn"))
         res$effp <- eff_num_par(udata, likvalues, bw, method, lfit)
     
     ## add further information if asked for
@@ -230,8 +251,8 @@ where both parts of the bandwidth specification are provided via  'your.B', and 
             cAIC <- AIC + (2 * effp * (effp + 1)) / (n - effp - 1)
             BIC  <- - 2 * loglik + log(n) * effp
         } else {
-#             warning("Effective number of parameters not yet implemented for this method.
-# Use 'info = FALSE' if you don't want to see this message.")
+            #             warning("Effective number of parameters not yet implemented for this method.
+            # Use 'info = FALSE' if you don't want to see this message.")
             effp <- AIC <- cAIC <- BIC <- NA
         }
         
@@ -242,10 +263,6 @@ where both parts of the bandwidth specification are provided via  'your.B', and 
                          AIC       = AIC,
                          cAIC      = cAIC,
                          BIC       = BIC)
-        
-        ## remove effp for TLL
-        if (method %in% c("TLL1", "TLL2"))
-            res$effp <- NULL
     }
     
     ## return results as kdecopula object

@@ -4,7 +4,7 @@
 \alias{kdecop}
 \title{Bivariate kernel copula density estimation}
 \usage{
-kdecop(udata, bw = NA, mult = 1, method = "TLL2", knots = 50,
+kdecop(udata, bw = NA, mult = 1, method = "TLL2", knots = 30,
   renorm.iter = 3L, info = TRUE)
 }
 \arguments{
@@ -28,8 +28,12 @@ estimates more/less smooth manually.}
 \code{"T"}: transformation estimator with standard bivariate kernel 
 estimation, \cr 
 \code{"TLL1"}: transformation estimator with log-linear local likelihood
+estimation (Geenenens et al., 2014), \cr 
+\code{"TLL2"}: transformation estimator with log-quadradtic local likelihood
+estimation (Geenenens et al., 2014), \cr 
+\code{"TLL1nn"}: transformation estimator with log-linear local likelihood
 estimation and nearest-neighbor bandwidths (Geenenens et al., 2014), \cr 
-\code{"TLL2"}: transformation estimator with log-quadradtic local likelihood 
+\code{"TLL2nn"}: transformation estimator with log-quadradtic local likelihood 
 estimation and nearest-neighbor bandwidths (Geenenens et al., 2014), \cr
 \code{"TTPI"}: tapered transformation estimator with plug-in bandwidths, \cr
 \code{"TTCV"}: tapered transformation estimator with profile cross-validation
@@ -73,8 +77,10 @@ or simulate synthetic data, respectively.
 }
 \details{
 Details on the estimation methods and bandwidth selection can be
-found in Geenens et al. (2014) for methods \code{TLL1/2} and Nagler (2014) 
-for other methods. We use a Gaussian product kernel function for all methods 
+found in Geenens et al. (2014) for methods \code{TLL1/2nn} and Nagler (2014) 
+for other methods. For \code{TLL1/2}, we use the rule of thumb
+\deqn{cov(\Phi^{-1}(udata))^{1/2} * 3.5 * n^{1 / (4 * deg + 2)}}.  
+We use a Gaussian product kernel function for all methods 
 except the beta kernel estimator.\cr 
 
 Kernel estimates are usually no proper copula densities. In particular, the

@@ -31,9 +31,11 @@ eff_num_par <- function(udata, likvalues, b, method, lfit) {
         scale <- dnorm(qnorm(udata)[, 1]) * dnorm(qnorm(udata)[, 2])
         effp  <- mean((kern_gauss_2d(0, 0, 1) / (scale * det(b))) / likvalues)
     }
-    if(method %in% c("TLL1", "TLL2"))
+    if (method %in% c("TLL1", "TLL2", "TLL1nn", "TLL2nn"))
         effp <- lfit$dp[["df2"]]
-
+    if (method == "bern")
+        effp <- NA
+    
     ## return result
     effp
 }
@@ -48,35 +50,64 @@ eval_func <- function(method) {
            "T"    = function(uev, obj)
                eval_trafo(uev, obj$udata, obj$bw),
            "TLL1" = function(uev, obj)
-               eval_tll(uev, obj$lfit, obj$bw$B),
+               eval_tll(uev, obj$lfit, obj$bw),
            "TLL2" = function(uev, obj)
+               eval_tll(uev, obj$lfit, obj$bw),
+           "TLL1nn" = function(uev, obj)
+               eval_tll(uev, obj$lfit, obj$bw$B),
+           "TLL2nn" = function(uev, obj)
                eval_tll(uev, obj$lfit, obj$bw$B),
            "TTPI" = function(uev, obj)
                eval_tt(uev, obj$udata, obj$bw),
            "TTCV" = function(uev, obj)
-               eval_tt(uev, obj$udata, obj$bw))
+               eval_tt(uev, obj$udata, obj$bw),
+           "bern" = function(uev, obj)
+               dberncop(uev, berncop(obj$udata, obj$bw)))
 }
 
 ##### local likelihood fitting
-my_locfit <- function(zdata, B, alpha, deg) {
-    ## construct grid (first u level, then transform to z level with B)
-    d <- ncol(zdata)
-    #     m <- round(100/d)
-    #     tmplst <- split(rep(seq.int(m)/(m+1), d), ceiling(seq.int(m*d)/m))
-    #     gr   <- as.matrix(do.call(expand.grid, tmplst))
-    #     grQR <- qnorm(gr) %*% B
-
-    ## transform data
+my_locfit <- function(zdata, B, alpha, kappa, deg, grid) {
+    # transform data
     qrs  <- zdata %*% B
-
+    gr <- do.call(expand.grid, lapply(1:ncol(qrs), function(i) c(-4, 4)))
+    qgr <- as.matrix(gr) %*% B
+    lims <- apply(qgr, 2L, range)
+    
     ## fit model
-    #     lims <- apply(grQR, 2L, range) * 1.8
-    cl.lst <- split(as.vector(qrs), ceiling(seq.int(nrow(qrs)*d)/nrow(qrs)))
+    cl.lst <- split(as.vector(qrs), rep(1:ncol(qrs), each = nrow(qrs)))
     cl.lst$nn <- alpha
+    cl.lst$deg <- deg
+    cl.lst$scale <- kappa
+    lf.lst <- list(~do.call(lp, cl.lst),
+                   maxk = 1024,
+                   kern = "gauss",
+                   ev = lfgrid(mg = 50, 
+                               ll = lims[1L, ], 
+                               ur = lims[2L, ]))
+    suppressWarnings(do.call(locfit, lf.lst))
+}
+
+##### local likelihood fitting
+my_locfitc <- function(zdata, B, mult, deg, grid) {
+    # transform data
+    qrs  <- zdata %*% B
+    gr <- do.call(expand.grid, lapply(1:ncol(qrs), function(i) c(-4, 4)))
+    qgr <- as.matrix(gr) %*% B
+    lims <- apply(qgr, 2L, range)
+    
+    ## fit model
+    cl.lst <- split(as.vector(qrs), rep(1:ncol(qrs), each = nrow(qrs)))
+    cl.lst$h <- 3.5 * mult
     cl.lst$deg <- deg
     lf.lst <- list(~do.call(lp, cl.lst),
                    maxk = 1000,
-                   kern = "gauss")
+                   kern = "gauss",
+                   scale = TRUE,
+                   ev = lfgrid(mg = 50, 
+                               ll = lims[1L, ], 
+                               ur = lims[2L, ]))
     suppressWarnings(do.call(locfit, lf.lst))
 }
+
+
 

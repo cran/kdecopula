@@ -14,7 +14,7 @@ Rcpp::NumericVector eval_hfunc_2d(const Rcpp::NumericMatrix& uev,
 {
     int N = uev.nrow();
     int m = grid.size();
-    NumericVector tmpvals(m), out(N);
+    NumericVector tmpvals(m), out(N), tmpa(4), tmpb(4);
     NumericMatrix tmpgrid(m, 2);
     double upr = 0.0;
     double tmpint, int1; 
@@ -30,7 +30,7 @@ Rcpp::NumericVector eval_hfunc_2d(const Rcpp::NumericMatrix& uev,
             tmpgrid(_, 0) = grid;
             tmpgrid(_, 1) = rep(uev(n, 1), m);
         }
-        tmpvals = interp_2d(tmpgrid, vals, grid);
+        tmpvals = interp_2d(tmpgrid, vals, grid, tmpa, tmpb);
         tmpint = int_on_grid(upr, tmpvals, grid);
         int1 =  int_on_grid(1.0, tmpvals, grid);
         out[n] = tmpint/int1;
@@ -49,7 +49,6 @@ Rcpp::NumericVector inv_hfunc(const Rcpp::NumericMatrix& uev,
 {
     NumericVector out(uev.nrow()), ans, val, x0, x1;
     double q;
-    int m = grid.size();
     NumericMatrix tmpu0(1, 2), tmpu1(1, 2);
     ans = 0.0, val = 0.0;
     double tol = 1e-10;
