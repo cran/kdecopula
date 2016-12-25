@@ -11,22 +11,19 @@ kdecop(udata, bw = NA, mult = 1, method = "TLL2", knots = 30,
 \item{udata}{\code{nx2} matrix of copula data.}
 
 \item{bw}{bandwidth specification; if \code{NA}, \code{bw} is selected
-automatically; Otherwise, please provide (for the respective method) \cr
-\code{"MR", "beta"}: a positive real number, \cr
-\code{"T"}: a \eqn{2x2} matrix for method, \cr
-\code{"TLL1", "TLL2"}: a list with (named) entries \code{B} and \code{alpha}
-containing the \eqn{2x2} rotation matrix \code{B} and the nearest-neighbor 
-fraction \code{alpha}, \cr
+automatically (see Details); Otherwise, please provide \cr
+\code{"T", "TLL1", "TLL2"}: a \eqn{2x2} bandwidth matrix, \cr
+\code{"TLL1nn", "TLL2nn"}: a list with (named) entries \code{B}, \code{alpha},
+and \code{kappa}, \cr
 \code{"TTCV", "TTPI"}: a numeric vector of length four containing \eqn{(h, 
-\rho, \theta_1, \theta_2)}, c.f. Wen and Wu (2015).}
+\rho, \theta_1, \theta_2)}, c.f. Wen and Wu (2015), \cr
+\code{"MR", "beta"}: a positive real number.}
 
 \item{mult}{bandwidth multiplier, has to be positive; useful for making 
 estimates more/less smooth manually.}
 
-\item{method}{\code{"MR"}: mirror-reflection estimator, \cr 
-\code{"beta"}: beta kernel estimator, \cr 
-\code{"T"}: transformation estimator with standard bivariate kernel 
-estimation, \cr 
+\item{method}{\code{"T"}: transformation estimator based on classical bivariate kernel 
+estimation (e.g., Geenenens et al., 2014), \cr 
 \code{"TLL1"}: transformation estimator with log-linear local likelihood
 estimation (Geenenens et al., 2014), \cr 
 \code{"TLL2"}: transformation estimator with log-quadradtic local likelihood
@@ -35,9 +32,14 @@ estimation (Geenenens et al., 2014), \cr
 estimation and nearest-neighbor bandwidths (Geenenens et al., 2014), \cr 
 \code{"TLL2nn"}: transformation estimator with log-quadradtic local likelihood 
 estimation and nearest-neighbor bandwidths (Geenenens et al., 2014), \cr
-\code{"TTPI"}: tapered transformation estimator with plug-in bandwidths, \cr
+\code{"TTPI"}: tapered transformation estimator with plug-in bandwidths
+(Wu and Wen, 2015), \cr
 \code{"TTCV"}: tapered transformation estimator with profile cross-validation
-bandwidths.}
+bandwidths (Wu and Wen, 2015), \cr
+\code{"MR"}: mirror-reflection estimator (Gijbels and Mielniczuk, 1990), \cr 
+\code{"beta"}: beta kernel estimator (Charpentier et al., 2006), \cr
+\code{"bern"}: Bernstein copula estimator (Sanchetta and Satchell, 2004); the
+coefficients are adjusted by the method of Weiss and Scheffer (2012).}
 
 \item{knots}{integer; number of knots in each dimension for the spline
 approximation.}
@@ -76,19 +78,21 @@ procedure. The related (d/p/r)kdecop functions evaluate the density and cdf
 or simulate synthetic data, respectively.
 }
 \details{
-Details on the estimation methods and bandwidth selection can be
-found in Geenens et al. (2014) for methods \code{TLL1/2nn} and Nagler (2014) 
-for other methods. For \code{TLL1/2}, we use the rule of thumb
-\deqn{cov(\Phi^{-1}(udata))^{1/2} * 3.5 * n^{1 / (4 * deg + 2)}}.  
 We use a Gaussian product kernel function for all methods 
-except the beta kernel estimator.\cr 
+except the beta kernel and Bernstein estimators. For details on bandwidth 
+selection for a specific method, see: \code{\link{bw_t}}, 
+\code{\link{bw_tll}}, \code{\link{bw_tll_nn}}, \code{\link{bw_tt_pi}}, 
+\code{\link{bw_tt_cv}}, \code{\link{bw_mr}}, \code{\link{bw_beta}}, 
+\code{\link{bw_bern}}.
+\cr 
 
 Kernel estimates are usually no proper copula densities. In particular, the
-estimated marginal densities are not uniform. We mitigate this issue bei
-implementing a renormalization procedure. The number of iterations of the
+estimated marginal densities are not uniform. We mitigate this issue by
+a renormalization procedure. The number of iterations of the
 renormalization algorithm can be specified with the \code{renorm.iter}
 argument. Typically, a very small number of iterations is sufficient. \cr
-
+}
+\note{
 The implementation of the tapered transformation estimator ("TTPI"/"TTCV") 
 was kindly provided by Kuangyu Wen.
 }
@@ -99,19 +103,21 @@ data(wdbc)
 udat <- apply(wdbc[, -1], 2, function(x) rank(x)/(length(x)+1))
 
 ## estimation of copula density of variables 5 and 6
-dens.est <- kdecop(udat[, 5:6])
-summary(dens.est)
-plot(dens.est) 
+est <- kdecop(udat[, 5:6])
+summary(est)
+plot(est) 
+contour(est)
 
 ## evaluate density estimate at (u1,u2)=(0.123,0.321)
-dkdecop(c(0.123, 0.321), dens.est) 
+dkdecop(c(0.123, 0.321), est) 
 
 ## evaluate cdf estimate at (u1,u2)=(0.123,0.321)
-pkdecop(c(0.123, 0.321), dens.est) 
+pkdecop(c(0.123, 0.321), est) 
 
 ## simulate 500 samples from density estimate
-plot(rkdecop(500, dens.est))  # pseudo-random
-plot(rkdecop(500, dens.est), quasi = TRUE)  # quasi-random
+plot(rkdecop(500, est))  # pseudo-random
+plot(rkdecop(500, est), quasi = TRUE)  # quasi-random
+
 
 }
 \author{
@@ -122,16 +128,28 @@ Geenens, G., Charpentier, A., and Paindaveine, D. (2014).
 Probit transformation for nonparametric kernel estimation of the copula
 density.
 arXiv:1404.4414 [stat.ME]. 
-\cr \cr 
-Nagler, T. (2014). 
-Kernel Methods for Vine Copula Estimation.
-Master's Thesis, Technische Universitaet Muenchen,
-\url{https://mediatum.ub.tum.de/node?id=1231221} 
 \cr \cr
 Wen, K. and Wu, X. (2015).
 Transformation-Kernel Estimation of the Copula Density,
 Working paper,
 \url{http://agecon2.tamu.edu/people/faculty/wu-ximing/agecon2/public/copula.pdf}
+\cr \cr
+Gijbels, I. and Mielniczuk, J. (1990).
+Estimating the density of a copula function.
+Communications in Statistics - Theory and Methods, 19(2):445-464. 
+\cr \cr 
+Charpentier, A., Fermanian, J.-D., and Scaillet, O. (2006).
+The estimation of copulas: Theory and practice. 
+In Rank, J., editor, Copulas: From theory to application in finance. Risk Books.
+\cr \cr 
+Weiss, G. and Scheffer, M. (2012).
+Smooth Nonparametric Bernstein Vine Copulas.
+arXiv:1210.2043 [q-fin.RM]
+\cr \cr
+Nagler, T. (2014). 
+Kernel Methods for Vine Copula Estimation.
+Master's Thesis, Technische Universitaet Muenchen,
+\url{https://mediatum.ub.tum.de/node?id=1231221}
 }
 \seealso{
 \code{\link[kdecopula:kdecopula]{kdecopula}},

@@ -1,3 +1,24 @@
+kdecopula 0.8.0
+-------------------------------
+
+NEW FEATURES
+
+  * Improved bandwidth selection heuristic for methods `TLL1/TLL2`.
+  
+  * The Bernstein copula density estimator is documented and comes with an
+    automated smoothing parameter selection routine.
+    
+  * All bandwidth selection methods now have a manual page (see `?kdecop` for
+    links).
+    
+  * Updated vignette.
+
+BUG FIXES
+
+  * fixed inconsistencies in bandwidth specification. The interpretation of the
+    bandwidth matrix is now the same for `TLL` and `T` methods.
+
+
 kdecopula 0.7.0
 -------------------------------
 

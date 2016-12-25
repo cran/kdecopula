@@ -42,8 +42,11 @@
 #' plot(obj)  # surface plot of copula density
 #' contour(obj)  # contour plot with standard normal margins
 #' contour(obj, margins = "unif")  # contour plot of copula density
+#' 
+#' @importFrom utils modifyList
+#' @importFrom stats dexp pexp qexp
 #'
-#'
+#' @export
 plot.kdecopula <- function(x, type = "surface", margins, size, ...) {
     if (length(dim(x$estimate)) > 2)
         stop("Plotting is only available for 2-dimensional densities.")
@@ -217,10 +220,18 @@ plot.kdecopula <- function(x, type = "surface", margins, size, ...) {
 
 #' @method contour kdecopula
 #' @rdname plot.kdecopula
+#' @export
 contour.kdecopula <- function(x, margins = "norm", size = 100L, ...) {
     plot(x, type = "contour", margins = margins, size = size, ...)
 }
 
+#' Tint a given color
+#'
+#' @param x color (as input to col2rgb)
+#' @param fac tinting factor
+#' @param alpha opacity value
+#' 
+#' @noRd
 tint <- function(x, fac, alpha = 1) {
     x <- c(col2rgb(x))
     x <- (x + (255 - x) * fac) / 255

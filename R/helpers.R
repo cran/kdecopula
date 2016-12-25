@@ -1,6 +1,18 @@
-### effective number of parameters
+#' Calculate the effective number of parameters of a fitted kdecopula
+#'
+#' @param udata data
+#' @param likvalues liklihood values for each observation
+#' @param b bandwidth
+#' @param method estimation method
+#' @param lfit locfit object (only for TLL methods)
+#' 
+#' Does not work for methods "bern", "TTPI", "TTCV".
+#' @noRd
+#' @importFrom stats dbeta
 eff_num_par <- function(udata, likvalues, b, method, lfit) {
-    if (method %in% c("MR")) {
+    if (method %in% c("TLL1", "TLL2", "TLL1nn", "TLL2nn")) {
+        effp <- lfit$dp[["df2"]]
+    } else if (method %in% c("MR")) {
         U <- udata[, 1]
         V <- udata[, 2]
         n <- length(U)
@@ -18,29 +30,26 @@ eff_num_par <- function(udata, likvalues, b, method, lfit) {
         K <- kern_gauss_2d(evalpoints[, 1], evalpoints[, 2], b)
         S <- rowSums(matrix(K, n, 9))
         effp <- sum(S / likvalues) / n
-    }
-    if (method == "beta") {
+    } else if (method == "beta") {
         bpkern <- function(x) {
             dbeta(x[1L], x[1L]/b + 1, (1-x[1L])/b + 1) *
                 dbeta(x[2L], x[2L]/b + 1, (1-x[2L])/b + 1)
         }
         p <- apply(udata, 1, bpkern)
         effp <- mean(p/likvalues)
-    }
-    if (method == "T") {
+    } else if (method == "T") {
         scale <- dnorm(qnorm(udata)[, 1]) * dnorm(qnorm(udata)[, 2])
         effp  <- mean((kern_gauss_2d(0, 0, 1) / (scale * det(b))) / likvalues)
     }
-    if (method %in% c("TLL1", "TLL2", "TLL1nn", "TLL2nn"))
-        effp <- lfit$dp[["df2"]]
-    if (method == "bern")
-        effp <- NA
     
     ## return result
     effp
 }
 
-##### return functions for evaluators
+#' Get evaluation function for given estimation method
+#'
+#' @noRd
+#' @param method estimation method
 eval_func <- function(method) {
     switch(method,
            "MR"   = function(uev, obj)
@@ -48,7 +57,7 @@ eval_func <- function(method) {
            "beta" = function(uev, obj)
                eval_beta(uev, obj$udata, obj$bw),
            "T"    = function(uev, obj)
-               eval_trafo(uev, obj$udata, obj$bw),
+               eval_t(uev, obj$udata, obj$bw),
            "TLL1" = function(uev, obj)
                eval_tll(uev, obj$lfit, obj$bw),
            "TLL2" = function(uev, obj)
@@ -64,50 +73,3 @@ eval_func <- function(method) {
            "bern" = function(uev, obj)
                dberncop(uev, berncop(obj$udata, obj$bw)))
 }
-
-##### local likelihood fitting
-my_locfit <- function(zdata, B, alpha, kappa, deg, grid) {
-    # transform data
-    qrs  <- zdata %*% B
-    gr <- do.call(expand.grid, lapply(1:ncol(qrs), function(i) c(-4, 4)))
-    qgr <- as.matrix(gr) %*% B
-    lims <- apply(qgr, 2L, range)
-    
-    ## fit model
-    cl.lst <- split(as.vector(qrs), rep(1:ncol(qrs), each = nrow(qrs)))
-    cl.lst$nn <- alpha
-    cl.lst$deg <- deg
-    cl.lst$scale <- kappa
-    lf.lst <- list(~do.call(lp, cl.lst),
-                   maxk = 1024,
-                   kern = "gauss",
-                   ev = lfgrid(mg = 50, 
-                               ll = lims[1L, ], 
-                               ur = lims[2L, ]))
-    suppressWarnings(do.call(locfit, lf.lst))
-}
-
-##### local likelihood fitting
-my_locfitc <- function(zdata, B, mult, deg, grid) {
-    # transform data
-    qrs  <- zdata %*% B
-    gr <- do.call(expand.grid, lapply(1:ncol(qrs), function(i) c(-4, 4)))
-    qgr <- as.matrix(gr) %*% B
-    lims <- apply(qgr, 2L, range)
-    
-    ## fit model
-    cl.lst <- split(as.vector(qrs), rep(1:ncol(qrs), each = nrow(qrs)))
-    cl.lst$h <- 3.5 * mult
-    cl.lst$deg <- deg
-    lf.lst <- list(~do.call(lp, cl.lst),
-                   maxk = 1000,
-                   kern = "gauss",
-                   scale = TRUE,
-                   ev = lfgrid(mg = 50, 
-                               ll = lims[1L, ], 
-                               ur = lims[2L, ]))
-    suppressWarnings(do.call(locfit, lf.lst))
-}
-
-
-
