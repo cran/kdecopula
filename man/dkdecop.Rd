@@ -4,6 +4,8 @@
 \alias{dkdecop}
 \alias{pkdecop}
 \alias{rkdecop}
+\alias{pkdecop}
+\alias{rkdecop}
 \title{Working with \code{kdecopula} objects}
 \usage{
 dkdecop(u, obj, stable = FALSE)
@@ -54,11 +56,8 @@ dkdecop(c(0.123, 0.321), dens.est)
 pkdecop(c(0.123, 0.321), dens.est) 
 
 ## simulate 500 samples from density estimate
-rkdecop(500, dens.est)
+plot(rkdecop(500, dens.est))
 
-}
-\author{
-Thomas Nagler
 }
 \references{
 Geenens, G., Charpentier, A., and Paindaveine, D. (2014).
@@ -80,4 +79,6 @@ arXiv:1508.03483 [stat.CO]
 \code{\link[kdecopula:plot.kdecopula]{plot.kdecopula}},
 \code{\link[qrng:ghalton]{ghalton}}
 }
-
+\author{
+Thomas Nagler
+}
