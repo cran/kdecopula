@@ -10,7 +10,7 @@ bw_mr(udata)
 \item{udata}{data.}
 }
 \value{
-optimal bandwidth parameter.
+A scalar bandwidth parameter.
 }
 \description{
 The bandwidth is selected by minimizing the MISE using the Frank copula as
@@ -18,7 +18,7 @@ the reference family. The copula parameter is set by inversion of Kendall's
 tau. See Nagler (2014) for details.
 }
 \details{
-To speed things up, optimal bandwidths have been precalculated on a grid of
+To speed things up, optimal bandwidths have been pre-calculated on a grid of
 tau values.
 }
 \references{

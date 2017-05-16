@@ -32,19 +32,29 @@ eff_num_par <- function(udata, likvalues, b, method, lfit) {
         effp <- sum(S / likvalues) / n
     } else if (method == "beta") {
         bpkern <- function(x) {
-            dbeta(x[1L], x[1L]/b + 1, (1-x[1L])/b + 1) *
-                dbeta(x[2L], x[2L]/b + 1, (1-x[2L])/b + 1)
+            dbeta(x[1L], x[1L]/b + 1, (1 - x[1L]) / b + 1) *
+                dbeta(x[2L], x[2L]/b + 1, (1 - x[2L]) / b + 1)
         }
         p <- apply(udata, 1, bpkern)
         effp <- mean(p/likvalues)
     } else if (method == "T") {
         scale <- dnorm(qnorm(udata)[, 1]) * dnorm(qnorm(udata)[, 2])
-        effp  <- mean((kern_gauss_2d(0, 0, 1) / (scale * det(b))) / likvalues)
+        effp  <- mean((kern_gauss_2d(0, 0, 1)[1] / (scale * det(b))) / likvalues)
+    } else if (method == "bern") {
+        effp <- apply(udata, 1, function(u) bern_edf_contrib(u, b))
+        effp <- sum(effp / likvalues)
     }
     
     ## return result
     effp
 }
+
+bern_edf_contrib <- function(u, m) {
+    ucut <- lapply(1:2, function(i) cut(u[i], 0:(m + 1) / (m + 1)))
+    cf0 <- table(ucut[[1]], ucut[[2]]) / m^2
+    dberncop(t(u), list(m = m, coefs = cf0))
+}
+
 
 #' Get evaluation function for given estimation method
 #'

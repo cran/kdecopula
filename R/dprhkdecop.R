@@ -1,63 +1,54 @@
 #' Working with \code{kdecopula} objects
-#'
-#' The function \code{\link{kdecop}} stores it's result in ojbect of class
-#' \code{kdecopula}. The density estimate can be evaluated on arbitrary points
-#' with \code{\link[kdecopula:dkdecop]{dkdecop}}; the cdf with
-#' \code{\link[kdecopula:pkdecop]{pkdecop}}. Furthermore, synthetic data can be
-#' simulated with \code{\link[kdecopula:rkdecop]{rkdecop}}.
-#'
+#' 
+#' The function [kdecop()] stores it's result in object of class `kdecopula`.
+#' The density estimate can be evaluated on arbitrary points with [dkdecop()];
+#' the cdf with [pkdecop()]. Furthermore, synthetic data can be simulated with
+#' [rkdecop()].
+#' 
 #' @aliases dkdecop pkdecop rkdecop
-#'
+#'   
 #' @param u \code{mx2} matrix of evaluation points.
 #' @param obj \code{kdecopula} object.
-#' @param stable logical; option for stabilizing the estimator: the estimated
-#' density is cut off at \eqn{50}.
-#' 
+#' @param stable logical; option for stabilizing the estimator: the estimated 
+#'   density is cut off at \eqn{50}.
+#'   
 #' @return A numeric vector of the density/cdf or a \code{n x 2} matrix of 
-#' simulated data.
-#' 
+#'   simulated data.
+#'   
 #' @author Thomas Nagler
-#' 
-#' @seealso 
-#' \code{\link[kdecopula:kdecop]{kdecop}},
-#' \code{\link[kdecopula:plot.kdecopula]{plot.kdecopula}},
+#'   
+#' @seealso \code{\link[kdecopula:kdecop]{kdecop}}, 
+#' \code{\link[kdecopula:plot.kdecopula]{plot.kdecopula}}, 
 #' \code{\link[qrng:ghalton]{ghalton}}
 #' 
-#' @references 
-#' Geenens, G., Charpentier, A., and Paindaveine, D. (2014).
-#' Probit transformation for nonparametric kernel estimation of the copula
-#' density.
-#' arXiv:1404.4414 [stat.ME]. 
-#' \cr \cr 
-#' Nagler, T. (2014). 
-#' Kernel Methods for Vine Copula Estimation.
-#' Master's Thesis, Technische Universitaet Muenchen,
-#' \url{https://mediatum.ub.tum.de/node?id=1231221} 
-#' \cr \cr 
-#' Cambou, T., Hofert, M., Lemieux, C. (2015).
-#' A primer on quasi-random numbers for copula models, 
-#' arXiv:1508.03483 [stat.CO]
+#' @references Geenens, G., Charpentier, A., and Paindaveine, D. (2017). Probit
+#' transformation for nonparametric kernel estimation of the copula density. 
+#' Bernoulli, 23(3), 1848-1873. \cr \cr Nagler, T. (2014). Kernel Methods for
+#' Vine Copula Estimation. Master's Thesis, Technische Universitaet Muenchen, 
+#' \url{https://mediatum.ub.tum.de/node?id=1231221} \cr \cr Cambou, T., Hofert,
+#' M., Lemieux, C. (2015). A primer on quasi-random numbers for copula models, 
+#' arXiv:1508.03483
 #' 
 #' 
 #' @examples
 #' 
 #' ## load data and transform with empirical cdf
 #' data(wdbc)
-#' udat <- apply(wdbc[, -1], 2, function(x) rank(x)/(length(x)+1))
+#' udat <- apply(wdbc[, -1], 2, function(x) rank(x) / (length(x) + 1))
 #' 
 #' ## estimation of copula density of variables 5 and 6
-#' dens.est <- kdecop(udat[, 5:6])
-#' plot(dens.est) 
+#' fit <- kdecop(udat[, 5:6])
+#' plot(fit) 
 #' 
 #' ## evaluate density estimate at (u1,u2)=(0.123,0.321)
-#' dkdecop(c(0.123, 0.321), dens.est) 
+#' dkdecop(c(0.123, 0.321), fit) 
 #' 
 #' ## evaluate cdf estimate at (u1,u2)=(0.123,0.321)
-#' pkdecop(c(0.123, 0.321), dens.est) 
+#' pkdecop(c(0.123, 0.321), fit) 
 #' 
 #' ## simulate 500 samples from density estimate
-#' plot(rkdecop(500, dens.est))
-#'
+#' plot(rkdecop(500, fit))
+#' 
 #' @export
 dkdecop <- function(u, obj, stable = FALSE) {
     stopifnot(is.numeric(u))
@@ -83,23 +74,11 @@ dkdecop <- function(u, obj, stable = FALSE) {
     ## evaluate density  (use faster algorithm for d = 2)
     if (stable)
         u <- pmin(pmax(u, 1e-3), 1 - 1e-3)
-    if (d == 2) {
-        out <- interp_2d(u,
-                         obj$estimate,
-                         obj$grid,
-                         numeric(4),
-                         numeric(4))
-    } else {
-        stop("d > 2 not implemented.")
-        # define help indicators
-        tmplst <- split(rep(seq(-1, 2, 1), d), ceiling(seq.int(4*d)/4))
-        helpind <- as.matrix(do.call(expand.grid, tmplst))
-        
-        out <- interp(u,
-                      obj$estimate,
-                      obj$grid,
-                      helpind)
-    }
+    out <- interp_2d(u,
+                     obj$estimate,
+                     obj$grid,
+                     numeric(4),
+                     numeric(4))
     
     ## stabilize output
     if (stable)
@@ -117,12 +96,11 @@ pkdecop <- function(u, obj) {
     stopifnot(inherits(obj, "kdecopula"))
     ## define appropriately shaped u matrix
     u <- as.matrix(u)
-    if(ncol(u) == 1)
+    if (ncol(u) == 1)
         u <- matrix(u, 1L, nrow(u))
     # adjust for flipping option of kdevine package
-    if(!is.null(obj$flip)) {
+    if (!is.null(obj$flip)) {
         u <- matrix(u[, 2:1], nrow(u))
-        cond.var <- ifelse(cond.var == 1, 2, 1)
     }
     d <- ncol(u)
     
@@ -148,7 +126,7 @@ pkdecop <- function(u, obj) {
 #' @param n integer; number of observations.
 #' @param quasi logical; the default (\code{FALSE}) returns pseudo-random
 #' numbers, use \code{TRUE} for quasi-random numbers (generalized Halton, see
-#' \code{\link[qrng:ghalton]{ghalton}}).
+#' [qrng::ghalton()]).
 #'
 #' @rdname dkdecop
 #' 
@@ -170,7 +148,7 @@ rkdecop <- function(n, obj, quasi = FALSE) {
     }
     
     # if independence copula is specified, return W
-    if("indep.copula" %in% class(obj))
+    if ("indep.copula" %in% class(obj))
         return(W)
     
     # invert h-function otherwise
@@ -185,18 +163,18 @@ rkdecop <- function(n, obj, quasi = FALSE) {
     out
 }
 
-#' H-function and inverse of kdecopula object
+#' H-function and inverse of a `kdecop()` fit
 #' 
-#' Evaluates the h-function (or its inverse) corresponding to a \code{kdecopula}
+#' Evaluates the h-function (or its inverse) corresponding to a `kdecopula`
 #' object. H-functions are conditional distribution functions obtained by
 #' integrating the copula density w.r.t. to one of its arguments (see also
-#' \code{\link[VineCopula:BiCopHfunc]{BiCopHfunc}}).
+#' [VineCopula::BiCopHfunc()].
 #' 
 #' @param u \eqn{n x 2} matrix of evaluation points.
 #' @param obj \code{kdecopula} object.
 #' @param cond.var integer; \code{cond.var = 1} conditions on the first variable,
-#' \code{cond.var = 2} on the secon.
-#' @param inverse logical; indicates wether the h-function or its inverse shall be
+#' \code{cond.var = 2} on the second.
+#' @param inverse logical; indicates whether the h-function or its inverse shall be
 #' calculated.
 #' 
 #' @return A length \eqn{n} vector of the (inverse) h-function evaluated at
@@ -204,22 +182,18 @@ rkdecop <- function(n, obj, quasi = FALSE) {
 #' 
 #' @author Thomas Nagler
 #' 
-#' @seealso 
-#' \code{\link[kdecopula:kdecop]{kdecop}},
-#' \code{\link[VineCopula:BiCopHfunc]{BiCopHfunc}}
-#' 
 #' @examples 
 #' ## load data and transform with empirical cdf
 #' data(wdbc)
-#' udat <- apply(wdbc[, -1], 2, function(x) rank(x)/(length(x)+1))
+#' udat <- apply(wdbc[, -1], 2, function(x) rank(x) / (length(x) + 1))
 #' 
 #' ## estimation of copula density of variables 5 and 6
-#' dens.est <- kdecop(udat[, 5:6])
-#' plot(dens.est) 
+#' fit <- kdecop(udat[, 5:6])
+#' plot(fit) 
 #' 
 #' ## evaluate h-function estimate and its inverse at (u1|u2) = (0.123 | 0.321)
-#' hkdecop(c(0.123, 0.321), dens.est, cond.var = 2) 
-#' hkdecop(c(0.123, 0.321), dens.est, cond.var = 2, inverse = TRUE) 
+#' hkdecop(c(0.123, 0.321), fit, cond.var = 2) 
+#' hkdecop(c(0.123, 0.321), fit, cond.var = 2, inverse = TRUE) 
 #' 
 #' @export
 hkdecop <- function(u, obj, cond.var, inverse = FALSE) {
@@ -228,15 +202,14 @@ hkdecop <- function(u, obj, cond.var, inverse = FALSE) {
     stopifnot(all(cond.var %in% c(1, 2)))
     ## define appropriately shaped u matrix
     u <- as.matrix(u)
-    if(ncol(u) == 1)
+    if (ncol(u) == 1)
         u <- matrix(u, 1L, nrow(u))
     ## adjust for flipping option of kdevine package
-    if(!is.null(obj$flip)) {
+    if (!is.null(obj$flip)) {
         u <- matrix(u[, 2:1], nrow(u))
         cond.var <- ifelse(cond.var == 1, 2, 1)
     }
-    d <- ncol(u)
-    
+
     # if independence copula is specified, return the conditioned variable
     if ("indep.copula" %in% class(obj))
         return(u[, -cond.var])
@@ -247,24 +220,6 @@ hkdecop <- function(u, obj, cond.var, inverse = FALSE) {
                              as.integer(cond.var),
                              obj$estimate,
                              obj$grid)
-        # # define help objects
-        # tmplst <- split(rep(seq(-1, 2, 1), d), ceiling(seq.int(4*d)/4))
-        # helpind <- as.matrix(do.call(expand.grid, tmplst))
-        # tmplst <- lapply(1:d,
-        #                  prep_hfunc,
-        #                  cond.var = cond.var,
-        #                  grid = obj$grid,
-        #                  d = d)
-        # helpgrid <- as.matrix(do.call(expand.grid, tmplst))
-        # uncond.var <- seq.int(d)[-cond.var]
-        # # call routine
-        # out <- eval_hfunc(u,
-        #                   as.integer(cond.var),
-        #                   as.integer(uncond.var),
-        #                   obj$estimate,
-        #                   obj$grid,
-        #                   helpgrid,
-        #                   helpind)
     } else {
         # inverse h-function
         out <- inv_hfunc(u,

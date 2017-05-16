@@ -1,4 +1,4 @@
-#' Automatic bandwidth selection
+#' Internal: Automatic bandwidth selection
 #'
 #' @param udata data
 #' @param method estimation method.
@@ -19,7 +19,7 @@ bw_select <- function(udata, method) {
            "bern"   = bw_bern(udata))
 }
 
-#' Add multiplier to given bandwidth specification
+#' Internal: Add multiplier to given bandwidth specification
 #'
 #' Allows to further control the degree of smoothing.
 #'
@@ -53,12 +53,12 @@ multiply_bw <- function(bw, mult, method, d) {
     bw
 }
 
-#' Check if bandwidth specification is valid
+#' Internal: Check if bandwidth specification is valid
 #'
 #' @param bw bandwidth specification.
 #' @param method estimation method.
 #'
-#' @return throws an error if invalid; returns nothing otherwise.
+#' @return Throws an error if invalid; returns nothing otherwise.
 #' @noRd
 check_bw <- function(bw, method) {
     if (method %in% c("TLL1nn", "TLL2nn")) {
@@ -97,7 +97,7 @@ check_bw <- function(bw, method) {
 #'
 #' @param udata data.
 #'
-#' @return optimal bandwidth matrix.
+#' @return A `2 x 2` bandwidth matrix.
 #'
 #' @details
 #' The formula is
@@ -114,7 +114,7 @@ check_bw <- function(bw, method) {
 #' @export
 bw_t <- function(udata) {
     n <- nrow(udata)
-    1.25 * n^(-1 / 6) * t(chol(cov(qnorm(udata))))
+    n^(-1 / 6) * t(chol(cov(qnorm(udata))))
 }
 
 #' Bandwidth selection for the transformation local likelihood estimator
@@ -124,7 +124,7 @@ bw_t <- function(udata) {
 #' @param udata data.
 #' @param deg degree of the polynomial.
 #'
-#' @return optimal bandwidth matrix.
+#' @return A `2 x 2` bandwidth matrix.
 #'
 #' @details
 #' The formula is
@@ -137,31 +137,36 @@ bw_t <- function(udata) {
 #' @export
 bw_tll <- function(udata, deg) {
     n <- nrow(udata)
-    5 * n^(-1 / (4 * deg + 2)) * t(chol(cov(qnorm(udata))))
+    3 * n^(-1 / (4 * deg + 2)) * t(chol(cov(qnorm(udata))))
 }
 
 #' Nearest-neighbor bandwidth selection for the transformation local likelihood
 #' estimator
 #'
-#' The smoothing parameters is selected by the method of Geenens et al. (2014).
+#' The smoothing parameters is selected by the method of Geenens et al. (2017).
+#' It uses principal components for the rotation matrix and selects the
+#' nearest neighbor fraction along each principal direction by approximate
+#' least-squares cross-validation.
 #'
 #' @param udata data.
 #' @param deg degree of the polynomial.
 #'
-#' @return A list with entires:
+#' @return A list with entries:
 #' \describe{
 #'   \item{\code{B}}{rotation matrix,}
-#'   \item{\code{alpha}}{nearest neighbor fraction,}
-#'   \item{\code{kappa}}{correction factor,}
+#'   \item{\code{alpha}}{nearest neighbor fraction (this one is multiplied
+#'   with `mult` in [`kdecop()`]),}
+#'   \item{\code{kappa}}{correction factor for differences in roughness along
+#'   the axes,}
 #' }
-#' see Geenens et al. (2014).
-#'
-#' @references
-#' Geenens, G., Charpentier, A., and Paindaveine, D. (2014).
+#' see Geenens et al. (2017).
+#' 
+#' @references 
+#' Geenens, G., Charpentier, A., and Paindaveine, D. (2017).
 #' Probit transformation for nonparametric kernel estimation of the copula
 #' density.
-#' arXiv:1404.4414 [stat.ME].
-#'
+#' Bernoulli, 23(3), 1848-1873. 
+#' 
 #' @importFrom stats princomp
 #' @export
 bw_tll_nn <- function(udata, deg) {
@@ -207,7 +212,7 @@ bw_tll_nn <- function(udata, deg) {
 #' @param rho.add logical; whether a rotation (correlation) parameter shall be
 #' included.
 #'
-#' @return optimal smoothing parameters as in Wen and Wu (2015): a numeric
+#' @return Optimal smoothing parameters as in Wen and Wu (2015): a numeric
 #' vector of length 4; entries are \eqn{(h, \rho, \theta_1, \theta_2)}.
 #'
 #' @author Kuangyu Wen
@@ -309,7 +314,7 @@ bw_tt_pi <- function(udata, rho.add = TRUE) {
 
     C2 <- matrix(C21 + C22 + 2 * rho * C23, dim(B)[1], 1)
     C3 <- phi40 + phi04 + (4 * rho^2 + 2) * phi22 + 4 * rho * (phi31 + phi13)
-    h <- as.numeric((1/2/pi/n/(C3 - t(C2) %*% solve(C1) %*%  C2)/
+    h <- as.numeric((1 / 2 / pi / n / (C3 - t(C2) %*% solve(C1) %*%  C2) /
                          sqrt(1 - rho^2))^(1/6))
     theta <- as.vector(-h^2/2 * solve(C1) %*% C2)
 
@@ -381,8 +386,8 @@ bw_tt_cv <- function(udata, rho.add = T) {
                           2 * h^2 * (2 * theta[1] + rho * theta[2]) + 1)
         eta <- mean(exp(-((4 * h^2 * theta[1]^2 - h^2 * theta[2]^2 + 2 * theta[1]) *
                               (Si^2 + Ti^2) +  (2 * rho * h^2 * theta[2]^2 - 8 * rho *
-                                                    h^2 * theta[1]^2 + 2 * theta[2]) * Si * Ti)/
-                            2/delta^2))/delta
+                                                    h^2 * theta[1]^2 + 2 * theta[2]) * Si * Ti) /
+                            2 / delta^2)) / delta
 
         alpha1 <- -2 * h^4 * (1 - rho^2) * (4 * theta[1]^2 -  theta[2]^2) +
             2 * h^2 * ((rho^2 - 3) * theta[1] - rho * theta[2]) - 1
@@ -394,7 +399,7 @@ bw_tt_cv <- function(udata, rho.add = T) {
         part1 <- mean(exp((alpha1 * (Xi^2 + Xj^2 + Yi^2 + Yj^2) +
                                alpha2 * (Xi * Yi + Xj * Yj) +
                                alpha3 * (Xi * Yj + Xj * Yi) + alpha4 *
-                               (Xi * Xj + Yi * Yj))/4/h^2/(1 - rho^2)/delta^2))/
+                               (Xi * Xj + Yi * Yj))/4/h^2/(1 - rho^2)/delta^2)) /
             4/pi/eta^2/h^2/delta/sqrt(1 - rho^2)
 
         part2 <- sum(sapply(1:n,
@@ -454,10 +459,10 @@ bw_tt_cv <- function(udata, rho.add = T) {
 #'
 #' @param udata data.
 #'
-#' @return optimal bandwidth parameter.
+#' @return A scalar bandwidth parameter.
 #'
 #' @details
-#' To speed things up, optimal bandwidths have been precalculated on a grid of
+#' To speed things up, optimal bandwidths have been pre-calculated on a grid of
 #' tau values.
 #'
 #' @references
@@ -470,7 +475,7 @@ bw_tt_cv <- function(udata, rho.add = T) {
 #'
 #' @importFrom stats cor
 bw_mr <- function(udata) {
-    tau <- abs(cor(udata, method = "kendall")[1L, 2L])
+    tau <- max(abs(cor(udata, method = "kendall")[1L, 2L]), 0.2)
     res <- precalc_bw_mr(tau) * nrow(udata)^(-1/6)
     if (res > 1) 1 else res
 }
@@ -535,10 +540,10 @@ precalc_bw_mr <- function(tau) {
 #'
 #' @param udata data.
 #'
-#' @return optimal bandwidth parameter.
+#' @return A scalar bandwidth parameter.
 #'
 #' @details
-#' To speed things up, optimal bandwidths have been precalculated on a grid of
+#' To speed things up, optimal bandwidths have been pre-calculated on a grid of
 #' tau values.
 #'
 #' @references
@@ -550,7 +555,7 @@ precalc_bw_mr <- function(tau) {
 #' @importFrom stats cor
 #' @export
 bw_beta <- function(udata) {
-    tau <- abs(cor(udata, method="kendall")[1L, 2L])
+    tau <- max(abs(cor(udata, method = "kendall")[1L, 2L]), 0.2)
     precalc_bw_beta(tau) * nrow(udata)^(-1/3)
 }
 
@@ -637,7 +642,7 @@ precalc_bw_beta <- function(tau) {
 #' \deqn{max(1, round(n^(1/3) * exp(abs(rho)^(1/n)) * (abs(rho) + 0.1))),}
 #' where \eqn{\rho} is the empirical Spearman's rho of the data.
 #'
-#' @return optimal order of the Bernstein polynimals.
+#' @return optimal order of the Bernstein polynomials.
 #'
 bw_bern <- function(udata) {
     n <- nrow(udata)

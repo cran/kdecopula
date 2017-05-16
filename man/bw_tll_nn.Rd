@@ -13,20 +13,25 @@ bw_tll_nn(udata, deg)
 \item{deg}{degree of the polynomial.}
 }
 \value{
-A list with entires:
+A list with entries:
 \describe{
-  \item{\code{B}}{rotation matrix,}
-  \item{\code{alpha}}{nearest neighbor fraction,}
-  \item{\code{kappa}}{correction factor,}
+\item{\code{B}}{rotation matrix,}
+\item{\code{alpha}}{nearest neighbor fraction (this one is multiplied
+with \code{mult} in \code{\link[=kdecop]{kdecop()}}),}
+\item{\code{kappa}}{correction factor for differences in roughness along
+the axes,}
 }
-see Geenens et al. (2014).
+see Geenens et al. (2017).
 }
 \description{
-The smoothing parameters is selected by the method of Geenens et al. (2014).
+The smoothing parameters is selected by the method of Geenens et al. (2017).
+It uses principal components for the rotation matrix and selects the
+nearest neighbor fraction along each principal direction by approximate
+least-squares cross-validation.
 }
 \references{
-Geenens, G., Charpentier, A., and Paindaveine, D. (2014).
+Geenens, G., Charpentier, A., and Paindaveine, D. (2017).
 Probit transformation for nonparametric kernel estimation of the copula
 density.
-arXiv:1404.4414 [stat.ME].
+Bernoulli, 23(3), 1848-1873.
 }
