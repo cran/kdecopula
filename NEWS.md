@@ -1,3 +1,12 @@
+kdecopula 0.9.2
+-------------------------------
+
+NEW FEATURES
+
+   * faster computations for `method = "bern"` due to removal of the quadratic
+     programming step for rescaling to uniform margins.
+
+
 kdecopula 0.9.1
 -------------------------------
 
