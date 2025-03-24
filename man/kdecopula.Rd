@@ -4,7 +4,6 @@
 \name{kdecopula}
 \alias{kdecopula}
 \alias{kdecopula-package}
-\alias{kdecopula-package}
 \title{Kernel Smoothing for Bivariate Copula Densities}
 \description{
 This package provides fast implementations of kernel estimators for the
@@ -66,10 +65,17 @@ Kernel Methods for Vine Copula Estimation.
 Master's Thesis, Technische Universitaet Muenchen,
 \url{https://mediatum.ub.tum.de/node?id=1231221}
 \cr \cr
-Wen, K. and Wu, X. (2015).
-Transformation-Kernel Estimation of the Copula Density,
-Working paper,
-\url{http://agecon2.tamu.edu/people/faculty/wu-ximing/agecon2/public/copula.pdf}
+Wen, K. and Wu, X. (2018).
+Transformation-Kernel Estimation of Copula Densities
+Journal of Business & Economic Statistics, 38(1), 148–164.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/tnagler/kdecopula}
+  \item Report bugs at \url{https://github.com/tnagler/kdecopula/issues}
+}
+
 }
 \author{
 Thomas Nagler

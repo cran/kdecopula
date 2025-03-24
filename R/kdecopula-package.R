@@ -46,11 +46,9 @@
 #' Master's Thesis, Technische Universitaet Muenchen,
 #' \url{https://mediatum.ub.tum.de/node?id=1231221}
 #' \cr \cr
-#' Wen, K. and Wu, X. (2015).
-#' Transformation-Kernel Estimation of the Copula Density,
-#' Working paper,
-#' \url{http://agecon2.tamu.edu/people/faculty/wu-ximing/agecon2/public/copula.pdf}
-#'
+#' Wen, K. and Wu, X. (2018).
+#' Transformation-Kernel Estimation of Copula Densities
+#' Journal of Business & Economic Statistics, 38(1), 148–164.
 #' @keywords package
 #'
 #' @examples
@@ -72,7 +70,7 @@
 #' ## simulate 500 samples from density estimate
 #' rkdecop(500, dens.est)
 #'
-NULL
+"_PACKAGE"
 
 
 #' Wisconsin Diagnostic Breast Cancer (WDBC)
@@ -124,8 +122,6 @@ NULL
 #'
 #'
 #' @source
-#' \url{http://mlr.cs.umass.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)}
-#' \cr \cr
 #' Bache, K. & Lichman, M. (2013).
 #' UCI Machine Learning Repository.
 #' Irvine, CA: University of California, School of Information and Computer

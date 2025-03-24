@@ -4,8 +4,15 @@
 \alias{kdecop}
 \title{Bivariate kernel copula density estimation}
 \usage{
-kdecop(udata, bw = NA, mult = 1, method = "TLL2nn", knots = 30,
-  renorm.iter = 3L, info = TRUE)
+kdecop(
+  udata,
+  bw = NA,
+  mult = 1,
+  method = "TLL2nn",
+  knots = 30,
+  renorm.iter = 3L,
+  info = TRUE
+)
 }
 \arguments{
 \item{udata}{\code{nx2} matrix of copula data.}
@@ -131,10 +138,9 @@ Probit transformation for nonparametric kernel estimation of the copula
 density.
 Bernoulli, 23(3), 1848-1873.
 \cr \cr
-Wen, K. and Wu, X. (2015).
-Transformation-Kernel Estimation of the Copula Density,
-Working paper,
-\url{http://agecon2.tamu.edu/people/faculty/wu-ximing/agecon2/public/copula.pdf}
+Wen, K. and Wu, X. (2018).
+Transformation-Kernel Estimation of Copula Densities
+Journal of Business & Economic Statistics, 38(1), 148–164.
 \cr \cr
 Gijbels, I. and Mielniczuk, J. (1990).
 Estimating the density of a copula function.
